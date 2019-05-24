@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Animação</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            #container {
+                width: 400px;
+                height: 400px;
+                position: relative;
+                background: yellow;
+            }
+            #batman {
+                width: 50px;
+                height: 50px;
+                position: absolute;
+                background: url("IMG/bat.png");
+                background-size: 55px;
+                z-index: 1;
+            }
+            #coringa {
+                width: 49px;
+                height: 49px;
+                left: 350px;
+                top: 350px;
+                position: absolute;
+                background: url("IMG/coringa.png");
+                background-size: 55px;
+            }
+            #fixed_keys {
+                visibility: visible;
+            }
+            #custom_keys {
+                visibility: hidden;
+                position: absolute;
+                top: 275px;
+            }
+        </style>
+        <script>
+            //Global variables
+            var posx = 0;
+            var posy = 0;
+            var esquerda, baixo, cima, direita;
+
+            // valores padrão para teclas de comando
+            esquerda = 104;
+            baixo = 107;
+            cima = 106;
+            direita = 108;
+
+            /**
+             * function myMove
+             * testa movimento em diagonal do 
+             * bloco vermelho (batman)
+             */
+            function myMove() {
+                var block = document.getElementById("batman");
+                var pos = 0;
+                var id = setInterval(frame, 5);
+                function frame() {
+                    if (pos == 350) {
+                        clearInterval(id);
+                    } else {
+                        pos++;
+                        block.style.top = pos + 'px';
+                        block.style.left = pos + 'px';
+                    }
+                }
+            }
+
+            /**
+             * function definirTeclas()
+             * muda vaiavel dt para true que é utilizada para 
+             * definir quando teclas custom serão utilizadas
+             * oculta o texto padrão e habilita caixas de texto para 
+             * receber novas teclas de comando.
+             * Ajusta o próximo foco e limpa texto caso deseje redefinir as teclas
+             */
+            var dt = false;
+            function definirTeclas() {
+                dt = true;
+                var fixed_keys = document.getElementById("fixed_keys");
+                var custom_keys = document.getElementById("custom_keys");
+                fixed_keys.style.visibility = "hidden";
+                custom_keys.style.visibility = "visible";
+                setFocus("esquerda");
+                clearTxt("esquerda");
+            }
+
+            /**
+             * function ajustaComando()
+             * @param {type} command - mover para cima, baixo, esquerda ou direita
+             * @param {type} event - evento do teclado
+             * @param {type} focus - id que recebe o foco
+             * @param {type} id - id que recebe o caracter de texto caso necessário
+             * @returns {undefined}
+             */
+            function ajustaComando(command, event, focus, id) {
+                if (command == 'esquerda') {
+                    esquerda = event.which || event.keyCode;
+                }
+                if (command == 'direita') {
+                    direita = event.which || event.keyCode;
+                }
+                if (command == 'baixo') {
+                    baixo = event.which || event.keyCode;
+                }
+                if (command == 'cima') {
+                    cima = event.which || event.keyCode;
+                }
+                if (id != "")
+                    document.getElementById(id).value = String.fromCharCode(event.which || event.keyCode);
+                setFocus(focus);
+            }
+
+            /**
+             * function clearTxt()
+             * limpar caixas de texto passando id
+             */
+            function clearTxt(id) {
+                document.getElementById(id).value = "";
+            }
+
+            /** 
+             * function setFocus
+             * set focus to...
+             */
+            function setFocus(id) {
+                document.getElementById(id).focus();
+            }
+
+            /**
+             * function keyMove 
+             * Movimenta um bloco de cor vermelha
+             * nos eixos X e Y pressionando as teclas padrão
+             * H - move para esquerda
+             * J - move para cima
+             * K - move para baixo
+             * L - move para direita
+             */
+            function keyMove(event) {//alert(event.keyCode);
+                var batman = document.getElementById("batman");
+                switch (event.keyCode) {
+                    case esquerda://104
+                        if (posx > 0)
+                            posx = posx - 5;
+                        capturar();
+                        batman.style.left = posx + 'px';
+                        break;
+                    case baixo://107
+                        if (posy >= 0 && posy < 350)
+                            posy = posy + 5;
+                        capturar();
+                        batman.style.top = posy + 'px';
+                        break;
+                    case cima://106
+                        if (posy > 0 && posy <= 350)
+                            posy = posy - 5;
+                        capturar();
+                        batman.style.top = posy + 'px';
+                        break;
+                    case direita://108
+                        if (posx >= 0 && posx < 350)
+                            posx = posx + 5;
+                        capturar();
+                        batman.style.left = posx + 'px';
+                        break;
+                    case 44://diag_bd
+                        if (posx >= 0 && posx < 350)
+                            posx = posx + 5;
+                        if (posy >= 0 && posy < 350)
+                            posy = posy + 5;
+                        capturar();
+                        batman.style.left = posx + 'px';
+                        batman.style.top = posy + 'px';
+                        break;
+                }
+            }
+
+            /**
+             * function startgame1
+             * inicia game onde coringa salta aleatoriamente
+             * a variavel id recebe o start do metodo
+             * coringaSalta, que é chamado a cada 0,3 segundo
+             */
+            var id;
+            function startGame1() {
+                stopGame();
+                id = setInterval(coringaSalta, 300);
+            }
+
+            /**
+             * function coringaSalta()
+             * movimenta o coringa aleatóriamente
+             * com intervalo de 5 em 5 pixels
+             */
+            function coringaSalta() {
+                var coringa = document.getElementById("coringa");
+                var x = Math.floor((Math.random() * 350) + 5);
+                var y = Math.floor((Math.random() * 350) + 5);
+                if (x % 5 == 0)
+                    coringa.style.left = x + "px";
+                if (y % 5 == 0)
+                    coringa.style.top = y + "px";
+            }
+
+            /***
+             * function capturar()
+             * move o batman e quando este
+             * tem a mesma posição do coringa
+             * da alerta que capturou e
+             * interrompe o jogo
+             */
+            function capturar() {
+                var batman = document.getElementById("batman");
+                var coringa = document.getElementById("coringa");
+                if ((batman.offsetTop == coringa.offsetTop) && (batman.offsetLeft == coringa.offsetLeft)) {
+                    batman.innerHTML = "<br/><br/>I'm BATMAN.";
+                    batman.style.color = "red";
+                    batman.style.fontSize = "25px";
+                    coringa.style.background = "url('IMG/coringa-dead.png')";
+                    coringa.style.backgroundSize = "55px";
+                    clearInterval(id);
+                }
+            }
+
+            /**
+             * function startGame2()
+             * movimenta o coringa aleatóriamente e continuamente
+             * com intervalo de 5 em 5 pixels
+             */
+            var id;
+            function startGame2() {
+                stopGame();
+                // area a ser percorrida pelo div (coringa)
+                var max_width = 350;
+                var max_height = 350;
+
+                var directions = {left: 1, up: 2, right: 3, down: 4};
+                var direction = getRandomDirection();
+                var distance = getRandomDistance();
+
+                var target = document.getElementById("coringa");
+                var target_pos = {top: 350, left: 350}
+
+                var i = 0;
+
+                var render_rate = 60; //velocidade
+                var move_step = 5; //passos de movimento
+
+                id = setInterval(function () {
+                    i++;
+                    if (i > distance) {
+                        distance = getRandomDistance();
+                        direction = getRandomDirection();
+                        i = 0;
+                    }
+                    move(direction, move_step)
+                }, render_rate)
+
+                function getRandomDistance() {
+                    return Math.floor((Math.random() * 20) + 1) + 5;
+                }
+
+                // define o sentido do movimento aleatoriamente
+                // entre 1 e 4
+                function getRandomDirection() {
+                    return Math.floor((Math.random() * 4) + 1);
+                }
+
+                function move(direction, step) {
+                    switch (direction) {
+                        case directions.left:
+                        {
+                            if (target_pos.left < max_width) {
+                                target_pos.left += step;
+                                target.style.left = target_pos.left + "px";
+                            }
+                            break;
+                        }
+                        case directions.up:
+                        {
+                            if (target_pos.top < max_height) {
+                                target_pos.top += step;
+                                target.style.top = target_pos.top + "px";
+                            }
+                            break;
+                        }
+
+                        case directions.right:
+                        {
+                            if (target_pos.left > 0) {
+                                target_pos.left -= step;
+                                target.style.left = target_pos.left + "px";
+                            }
+                            break;
+                        }
+
+                        case directions.down:
+                        {
+                            if (target_pos.top > 0) {
+                                target_pos.top -= step;
+                                target.style.top = target_pos.top + "px";
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            /**
+             * function stopGame
+             * reicicia jogo
+             * @returns {undefined}
+             */
+            function stopGame() {
+                posx = 0;
+                posy = 0;
+                var batman = document.getElementById("batman");
+                var coringa = document.getElementById("coringa");
+                document.getElementById("batman").innerHTML = "";
+                clearInterval(id);
+                batman.style.top = "0px";
+                batman.style.left = "0px";
+                coringa.style.top = "350px";
+                coringa.style.left = "350px";
+                coringa.style.background = "url('IMG/coringa.png')";
+                coringa.style.backgroundSize = "55px";
+            }
+
+        </script>
+    </head>
+    <body onkeypress="keyMove(event)">
+        <h1> Batman </h1>
+        <p> Clique no Botão "Start" para começar a jogar.</p>
+        <table>
+            <tr>
+                <td>
+                    <div id="container">
+                        <div id="batman"></div>
+                        <div id="coringa"></div>
+                    </div>
+                    <p>
+                        <button id="start_game1" onclick="startGame1()">Start Game1</button>
+                        <button id="start_game2" onclick="startGame2()">Start Game2</button>
+                        <button id="stop_game2" onclick="stopGame()">Stop Game</button>
+                    </p> 
+                </td>
+                <td>
+                    <p> Utilize as teclas: </p>
+                    <div id="show_pos"></div>
+                    <ul id="fixed_keys">    
+                        <li>H - mover para a esquerda </li>
+                        <li>J - mover para cima </li>
+                        <li>K - mover para baixo </li>
+                        <li>L - mover para a direita </li>
+                    </ul>
+                    <div id="custom_keys">
+                        <br/>
+                        <input type="text" id="esquerda" size="1" onkeypress="ajustaComando('esquerda', event, 'cima', '')">  - mover para a esquerda<br/>
+                        <input type="text" id="cima" size="1" onkeypress="ajustaComando('cima', event, 'baixo', '')">  - mover para cima<br/> 
+                        <input type="text" id="baixo" size="1" onkeypress="ajustaComando('baixo', event, 'direita', '')">  - mover para baixo<br/> 
+                        <input type="text" id="direita" size="1" onkeypress="ajustaComando('direita', event, 'start_game1', 'direita')">  - mover para a direita
+                    </div>
+                    <p> Ou selecione clique no botão definir teclas </p>
+                    <button onclick="definirTeclas()">Definir Teclas</button>  
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
